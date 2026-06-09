@@ -62,6 +62,44 @@ export type ActiveServiceOrder = {
   vehicle?: CustomerVehicle | null;
 };
 
+export type CustomerTrackingDetail = ActiveServiceOrder & {
+  checkInAt: string | null;
+  finishedAt: string | null;
+  mileageIn: number | null;
+  customerComplaint: string | null;
+  initialDiagnosis: string | null;
+  totalServicePrice: number;
+  totalSparepartPrice: number;
+  grandTotal: number;
+  serviceItems: {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    subtotal: number;
+  }[];
+  sparepartItems: {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    subtotal: number;
+  }[];
+  notes: {
+    id: string;
+    note: string;
+    visibility: "CUSTOMER_VISIBLE";
+    createdAt: string;
+  }[];
+  photos: {
+    id: string;
+    url: string;
+    caption: string | null;
+    visibility: "CUSTOMER_VISIBLE";
+    createdAt: string;
+  }[];
+};
+
 export type ServiceHistory = {
   id: string;
   serviceName: string;
@@ -173,6 +211,12 @@ export function createBooking(payload: BookingPayload) {
 
 export function fetchActiveServiceOrders() {
   return customerRequest<ActiveServiceOrder[]>("/customer/service-orders/active");
+}
+
+export function fetchCustomerServiceTracking(id: string) {
+  return customerRequest<CustomerTrackingDetail>(
+    `/customer/service-orders/${id}/tracking`
+  );
 }
 
 export function fetchServiceHistory() {

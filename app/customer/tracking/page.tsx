@@ -1,25 +1,44 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { CustomerShell, EmptyState, StatusBadge } from "@/components/customer-shell";
 import {
-  ActiveServiceOrder,
+  CustomerTrackingDetail,
   fetchActiveServiceOrders,
+  fetchCustomerServiceTracking,
   formatDate,
+  formatRupiah,
 } from "@/lib/customer";
 
 export default function CustomerTrackingPage() {
-  const [orders, setOrders] = useState<ActiveServiceOrder[]>([]);
+  const [orders, setOrders] = useState<CustomerTrackingDetail[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     fetchActiveServiceOrders()
-      .then(setOrders)
-      .catch((fetchError) =>
-        setError(fetchError instanceof Error ? fetchError.message : "Request gagal")
+      .then((activeOrders) =>
+        Promise.all(
+          activeOrders.map((order) => fetchCustomerServiceTracking(order.id))
+        )
       )
-      .finally(() => setIsLoading(false));
+      .then((trackingDetails) => {
+        if (isMounted) setOrders(trackingDetails);
+      })
+      .catch((fetchError) => {
+        if (!isMounted) return;
+        setError(fetchError instanceof Error ? fetchError.message : "Request gagal");
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -62,16 +81,100 @@ export default function CustomerTrackingPage() {
               <StatusBadge status={order.status} />
             </div>
             <div className="mt-5 border-l-2 border-blue-200 pl-4">
-              <p className="text-sm font-semibold text-slate-950">
-                {order.currentStep}
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                Timeline detail akan diisi dari modul service order admin.
-              </p>
+              <TimelineItem
+                title="Check-in"
+                description={order.customerComplaint || "Keluhan diterima admin."}
+                date={order.checkInAt || order.startedAt}
+              />
+              <TimelineItem
+                title={order.currentStep}
+                description={
+                  order.initialDiagnosis || "Progress service sedang berjalan."
+                }
+                date={order.startedAt}
+              />
+              {order.notes.map((note) => (
+                <TimelineItem
+                  key={note.id}
+                  title="Catatan progress"
+                  description={note.note}
+                  date={note.createdAt}
+                />
+              ))}
             </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              <CostCard label="Jasa" value={order.totalServicePrice} />
+              <CostCard label="Sparepart" value={order.totalSparepartPrice} />
+              <CostCard label="Total" value={order.grandTotal} strong />
+            </div>
+            {order.photos.length > 0 ? (
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {order.photos.map((photo) => (
+                  <figure
+                    key={photo.id}
+                    className="overflow-hidden rounded-md border border-slate-200"
+                  >
+                    <Image
+                      src={photo.url}
+                      alt={photo.caption || "Foto progress service"}
+                      width={320}
+                      height={180}
+                      unoptimized
+                      className="h-36 w-full object-cover"
+                    />
+                    {photo.caption ? (
+                      <figcaption className="p-3 text-xs text-slate-600">
+                        {photo.caption}
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                ))}
+              </div>
+            ) : null}
           </article>
         ))}
       </div>
     </CustomerShell>
+  );
+}
+
+function TimelineItem({
+  title,
+  description,
+  date,
+}: {
+  title: string;
+  description: string;
+  date: string | null;
+}) {
+  return (
+    <div className="relative pb-5 pl-4 before:absolute before:left-[-5px] before:top-1 before:h-2 before:w-2 before:rounded-full before:bg-blue-600">
+      <p className="text-sm font-semibold text-slate-950">{title}</p>
+      <p className="mt-1 text-sm text-slate-600">{description}</p>
+      <p className="mt-1 text-xs text-slate-500">{formatDate(date)}</p>
+    </div>
+  );
+}
+
+function CostCard({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string;
+  value: number;
+  strong?: boolean;
+}) {
+  return (
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </p>
+      <p
+        className={`mt-2 text-sm ${strong ? "font-bold text-slate-950" : "font-semibold text-slate-700"}`}
+      >
+        {formatRupiah(value)}
+      </p>
+    </div>
   );
 }

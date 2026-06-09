@@ -1,17 +1,29 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
+import { 
+  LayoutDashboard, 
+  Car, 
+  CalendarDays, 
+  Search, 
+  History, 
+  FileText,
+  Wrench
+} from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { ProtectedRoute } from "@/components/protected-route";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/customer/dashboard", label: "Dashboard" },
-  { href: "/customer/vehicles", label: "Kendaraan" },
-  { href: "/customer/bookings", label: "Booking" },
-  { href: "/customer/tracking", label: "Tracking" },
-  { href: "/customer/history", label: "Riwayat" },
-  { href: "/customer/invoices", label: "Invoice" },
+  { href: "/customer/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/customer/vehicles", label: "Kendaraan", icon: Car },
+  { href: "/customer/bookings", label: "Booking", icon: CalendarDays },
+  { href: "/customer/tracking", label: "Tracking", icon: Search },
+  { href: "/customer/history", label: "Riwayat", icon: History },
+  { href: "/customer/invoices", label: "Invoice", icon: FileText },
 ];
 
 export function CustomerShell({
@@ -23,40 +35,60 @@ export function CustomerShell({
   description: string;
   children: ReactNode;
 }) {
+  const pathname = usePathname();
+
   return (
     <ProtectedRoute allowedRoles={["CUSTOMER"]}>
-      <main className="min-h-screen bg-slate-50">
-        <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <Link
-                href="/"
-                className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-700"
-              >
-                BengkelPro
-              </Link>
-              <h1 className="mt-2 text-2xl font-semibold text-slate-950">
-                {title}
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm text-slate-600">
-                {description}
-              </p>
+      <main className="min-h-screen bg-muted/40 text-foreground">
+        <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 h-16 sm:px-6">
+            <Link href="/" className="flex items-center gap-2 font-bold text-primary">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                <Wrench className="h-5 w-5" />
+              </div>
+              <span className="hidden sm:inline-block">BengkelPro</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <LogoutButton />
             </div>
-            <LogoutButton />
           </div>
-          <nav className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-6 pb-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:border-blue-200 hover:text-blue-700"
-              >
-                {item.label}
-              </Link>
-            ))}
+          <nav className="border-t">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6">
+              <div className="flex gap-1 overflow-x-auto py-2 scrollbar-none">
+                {navItems.map((item) => {
+                  const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                  return (
+                    <Button
+                      key={item.href}
+                      variant={isActive ? "secondary" : "ghost"}
+                      size="sm"
+                      asChild
+                      className={cn(
+                        "flex-shrink-0 gap-2",
+                        isActive ? "bg-secondary font-semibold" : "text-muted-foreground"
+                      )}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </Link>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
           </nav>
         </header>
-        <section className="mx-auto max-w-6xl px-6 py-6">{children}</section>
+        
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+            <p className="mt-2 text-muted-foreground">
+              {description}
+            </p>
+          </div>
+          {children}
+        </div>
       </main>
     </ProtectedRoute>
   );
@@ -70,18 +102,23 @@ export function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-md border border-dashed border-slate-300 bg-white p-6 text-center">
-      <p className="font-semibold text-slate-950">{title}</p>
-      <p className="mt-2 text-sm text-slate-600">{description}</p>
+    <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 text-center bg-background">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+        <Search className="h-6 w-6 text-muted-foreground" />
+      </div>
+      <h3 className="mt-4 text-lg font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground max-w-xs">{description}</p>
     </div>
   );
 }
 
+import { Badge } from "@/components/ui/badge";
+
 export function StatusBadge({ status }: { status: string }) {
   const normalized = status.toLowerCase().replaceAll("_", " ");
   return (
-    <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-700">
+    <Badge variant="outline" className="capitalize">
       {normalized}
-    </span>
+    </Badge>
   );
 }
