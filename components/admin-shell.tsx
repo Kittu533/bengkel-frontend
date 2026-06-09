@@ -7,6 +7,7 @@ import { ProtectedRoute } from "@/components/protected-route";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard" },
+  { href: "/admin/bookings", label: "Bookings" },
   { href: "/admin/master/customers", label: "Customers" },
   { href: "/admin/master/vehicles", label: "Vehicles" },
   { href: "/admin/master/services", label: "Services" },

@@ -43,6 +43,14 @@ export type CustomerBooking = {
   vehicle?: CustomerVehicle | null;
 };
 
+export type BookingPayload = {
+  vehicleId: string;
+  serviceCatalogId: string;
+  bookingDate: string;
+  bookingTime: string;
+  complaint: string;
+};
+
 export type ActiveServiceOrder = {
   id: string;
   code: string;
@@ -154,6 +162,13 @@ export function deleteCustomerVehicle(id: string) {
 
 export function fetchCustomerBookings() {
   return customerRequest<CustomerBooking[]>("/customer/bookings");
+}
+
+export function createBooking(payload: BookingPayload) {
+  return customerRequest<CustomerBooking>("/bookings", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export function fetchActiveServiceOrders() {
