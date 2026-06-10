@@ -164,7 +164,7 @@ function AdminSidebar() {
             <CardHeader className="p-4 pt-0">
               <CardTitle className="text-sm">Admin Workspace</CardTitle>
               <CardDescription className="text-xs">
-                BengkelPro v0.9.0
+                BengkelPro v1.2.0
               </CardDescription>
             </CardHeader>
           </Card>
