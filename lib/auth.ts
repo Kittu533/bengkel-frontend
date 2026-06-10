@@ -13,6 +13,8 @@ export type AuthUser = {
   name: string;
   email: string;
   phone: string;
+  tenantId: string | null;
+  branchId: string | null;
   status: string;
   roles: Role[];
 };
