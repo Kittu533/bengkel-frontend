@@ -162,6 +162,8 @@ export function listAuditLogs(
     search?: string;
     action?: string;
     entityType?: string;
+    dateFrom?: string;
+    dateTo?: string;
     page?: number;
     limit?: number;
   } = {}
@@ -169,6 +171,35 @@ export function listAuditLogs(
   return superAdminRequest<Paginated<AuditLog>>(
     `/super-admin/audit-logs${queryString(params)}`
   );
+}
+
+export async function exportAuditLogsCsv(
+  params: {
+    search?: string;
+    action?: string;
+    entityType?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    limit?: number;
+  } = {}
+) {
+  const session = getSession();
+  const response = await fetch(
+    `${API_URL}/super-admin/audit-logs/export.csv${queryString(params)}`,
+    {
+      headers: {
+        ...(session?.accessToken
+          ? { Authorization: `Bearer ${session.accessToken}` }
+          : {}),
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Export audit log gagal");
+  }
+
+  return response.blob();
 }
 
 export function formatRupiah(value: number) {

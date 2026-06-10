@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Activity, Database, Search, ShieldCheck } from "lucide-react";
+import { Activity, Database, Download, Search, ShieldCheck } from "lucide-react";
 import { SuperAdminShell } from "@/components/super-admin-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AuditLog, listAuditLogs } from "@/lib/super-admin";
+import { AuditLog, exportAuditLogsCsv, listAuditLogs } from "@/lib/super-admin";
 
 const actionOptions = [
   "tenant.create",
@@ -36,23 +36,32 @@ export default function SuperAdminAuditLogsPage() {
   const [search, setSearch] = useState("");
   const [action, setAction] = useState("");
   const [entityType, setEntityType] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+
+  function currentFilters(nextPage = page) {
+    return {
+      search,
+      action,
+      entityType,
+      dateFrom,
+      dateTo,
+      page: nextPage,
+      limit: 20,
+    };
+  }
 
   async function loadLogs(nextPage = page) {
     setError("");
     setIsLoading(true);
     try {
-      const result = await listAuditLogs({
-        search,
-        action,
-        entityType,
-        page: nextPage,
-        limit: 20,
-      });
+      const result = await listAuditLogs(currentFilters(nextPage));
       setLogs(result.data);
       setPage(result.meta.page);
       setTotalPages(result.meta.totalPages);
@@ -107,6 +116,33 @@ export default function SuperAdminAuditLogsPage() {
     loadLogs(1);
   }
 
+  async function downloadCsv() {
+    setError("");
+    setIsExporting(true);
+    try {
+      const blob = await exportAuditLogsCsv({
+        search,
+        action,
+        entityType,
+        dateFrom,
+        dateTo,
+        limit: 5000,
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `audit-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    } catch (exportError) {
+      setError(exportError instanceof Error ? exportError.message : "Export gagal");
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   return (
     <SuperAdminShell
       title="Audit Logs"
@@ -144,7 +180,7 @@ export default function SuperAdminAuditLogsPage() {
           <CardTitle>Filter Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={submitFilter} className="grid gap-3 lg:grid-cols-[1fr_220px_220px_auto]">
+          <form onSubmit={submitFilter} className="grid gap-3 xl:grid-cols-[1fr_200px_200px_160px_160px_auto]">
             <label className="relative">
               <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <input
@@ -178,6 +214,20 @@ export default function SuperAdminAuditLogsPage() {
                 </option>
               ))}
             </select>
+            <input
+              className="rounded-md border bg-background px-3 py-2 text-sm"
+              type="date"
+              value={dateFrom}
+              aria-label="Date from"
+              onChange={(event) => setDateFrom(event.target.value)}
+            />
+            <input
+              className="rounded-md border bg-background px-3 py-2 text-sm"
+              type="date"
+              value={dateTo}
+              aria-label="Date to"
+              onChange={(event) => setDateTo(event.target.value)}
+            />
             <Button type="submit" disabled={isLoading}>
               {isLoading ? "Loading..." : "Apply"}
             </Button>
@@ -194,6 +244,16 @@ export default function SuperAdminAuditLogsPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isExporting}
+              onClick={downloadCsv}
+              className="gap-2"
+            >
+              <Download className="h-4 w-4" />
+              {isExporting ? "Exporting..." : "Export CSV"}
+            </Button>
             <Button
               type="button"
               variant="outline"
