@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
-import { Building2, CreditCard, LayoutDashboard, Shield, Wrench } from "lucide-react";
+import { Building2, CreditCard, LayoutDashboard, ScrollText, Shield, Wrench } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { ProtectedRoute } from "@/components/protected-route";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ const navItems = [
   { href: "/super-admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/super-admin/tenants", label: "Tenants", icon: Building2 },
   { href: "/super-admin/plans", label: "Plans", icon: CreditCard },
+  { href: "/super-admin/audit-logs", label: "Audit Logs", icon: ScrollText },
 ];
 
 export function SuperAdminShell({

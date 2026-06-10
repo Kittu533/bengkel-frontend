@@ -41,6 +41,25 @@ export type Tenant = {
   };
 };
 
+export type AuditLog = {
+  id: string;
+  actorId: string | null;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  metadata: Record<string, unknown> | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  requestId: string | null;
+  createdAt: string;
+  actor: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null;
+};
+
 export type Paginated<T> = {
   data: T[];
   meta: { page: number; limit: number; total: number; totalPages: number };
@@ -136,6 +155,20 @@ export function deactivatePlan(id: string) {
   return superAdminRequest<SubscriptionPlan>(`/super-admin/plans/${id}`, {
     method: "DELETE",
   });
+}
+
+export function listAuditLogs(
+  params: {
+    search?: string;
+    action?: string;
+    entityType?: string;
+    page?: number;
+    limit?: number;
+  } = {}
+) {
+  return superAdminRequest<Paginated<AuditLog>>(
+    `/super-admin/audit-logs${queryString(params)}`
+  );
 }
 
 export function formatRupiah(value: number) {
