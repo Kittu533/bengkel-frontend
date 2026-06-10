@@ -10,7 +10,7 @@ export default function LoginPage() {
         </p>
         <h1 className="mt-3 text-2xl font-semibold text-slate-950">Login</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Masuk sebagai owner, admin, mechanic, atau customer untuk mengakses workspace.
+          Masuk sebagai super admin, owner, admin, mechanic, atau customer untuk mengakses workspace.
         </p>
 
         <div className="mt-6">

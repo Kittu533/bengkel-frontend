@@ -59,6 +59,7 @@ export function clearSession() {
 }
 
 export function getDashboardPath(user: AuthUser) {
+  if (user.roles.includes("SUPER_ADMIN")) return "/super-admin/dashboard";
   if (user.roles.includes("ADMIN")) return "/admin/dashboard";
   if (user.roles.includes("OWNER")) return "/owner/dashboard";
   if (user.roles.includes("MECHANIC")) return "/mechanic/tasks";
