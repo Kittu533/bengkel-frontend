@@ -117,7 +117,27 @@ export type Invoice = {
   issuedAt: string;
   dueAt: string | null;
   totalAmount: number;
+  paidAmount: number;
   paidAt: string | null;
+  pdfUrl?: string | null;
+  serviceOrder?: ActiveServiceOrder | null;
+  items?: {
+    id: string;
+    type: "SERVICE" | "SPAREPART";
+    name: string;
+    quantity: number;
+    price: number;
+    subtotal: number;
+  }[];
+  payments?: {
+    id: string;
+    paymentNumber: string;
+    amount: number;
+    method: string;
+    status: string;
+    paidAt: string;
+    referenceNumber: string | null;
+  }[];
 };
 
 type ApiResponse<T> = {

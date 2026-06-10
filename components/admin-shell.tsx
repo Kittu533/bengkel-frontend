@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   CalendarDays,
   ClipboardList,
+  FileText,
   Users,
   Car,
   Package,
@@ -25,6 +26,7 @@ const primaryNav = [
   { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
   { href: "/admin/service-orders", label: "Service Orders", icon: ClipboardList },
   { href: "/admin/inventory", label: "Inventory", icon: Package },
+  { href: "/admin/invoices", label: "Invoices", icon: FileText },
 ];
 
 const masterNav = [
